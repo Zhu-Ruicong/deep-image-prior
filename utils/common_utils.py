@@ -60,14 +60,14 @@ def get_image_grid(images_np, nrow=8):
     return torch_grid.numpy()
 
 
-def save_image_grid(images_np, image_name, nrow=8, factor=1, interpolation='lanczos'):
+def save_image_grid(images_np, image_name, nrow=8, factor=1):
     """Draws images in a grid
 
     Args:
         images_np: list of images, each image is np.array of size 3xHxW of 1xHxW
+        image_name: name of image saved
         nrow: how many images will be in one row
         factor: size if the plt.figure
-        interpolation: interpolation used in plt.imshow
     """
     n_channels = max(x.shape[0] for x in images_np)
     assert (n_channels == 3) or (n_channels == 1), "images should have 1 or 3 channels"
