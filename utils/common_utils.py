@@ -79,9 +79,9 @@ def save_image_grid(images_np, image_name, nrow=8, factor=1, interpolation='lanc
     plt.figure(figsize=(len(images_np) + factor, 12 + factor))
 
     if images_np[0].shape[0] == 1:
-        plt.imsave(image_name, grid[0], cmap='gray', interpolation=interpolation)
+        plt.imsave(image_name, grid[0], cmap='gray')
     else:
-        plt.imsave(image_name, grid.transpose(1, 2, 0), interpolation=interpolation)
+        plt.imsave(image_name, grid.transpose(1, 2, 0))
 
     return grid
 
