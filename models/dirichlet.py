@@ -9,8 +9,8 @@ CHANNEL_EXP_SUMS = [1,1,1]
 class DirichletLayer(nn.Module):
 
     def forward(self, input):
-        flat_input = torch.flatten(input, start_dim=2)
-        sample = Dirichlet(flat_input).rsample()
+        flat_input = torch.flatten(torch.exp(input), start_dim=2)
+        sample = Dirichlet(flat_input).sample()
         # multiplier = torch.diag(torch.tensor(CHANNEL_EXP_SUMS)).float()
         # scaled_sample = torch.matmul(multiplier, sample)
         # log_scaled_sample = torch.log(scaled_sample)
