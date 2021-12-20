@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from .common import *
-from .dirichlet import DirichletLayer
+from .dirichlet import DirichletLayer, ExponentOutputLayer
 
 def skip(
         num_input_channels=2, num_output_channels=3, 
@@ -97,6 +97,8 @@ def skip(
     model.add(conv(num_channels_up[0], num_output_channels, 1, bias=need_bias, pad=pad))
     # if need_sigmoid:
     #     model.add(nn.Sigmoid())
-    model.add(nn.ReLU())
-    model.add(DirichletLayer())
+    # model.add(nn.ReLU())
+
+    # model.add(DirichletLayer())
+    model.add(ExponentOutputLayer())
     return model
