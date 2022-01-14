@@ -13,6 +13,9 @@ class ExponentOutputLayer(nn.Module):
     def forward(self, input):
         return torch.exp(input)
 
+class SquareOutputLayer(nn.Module):
+    def forward(self, input):
+        return torch.square(input)
 
 class DirichletLayer(nn.Module):
 
@@ -82,6 +85,14 @@ def recover_softmax(img_np, exp_sums, scalar):
         output.append(channel)
     output = np.array(output).reshape([3, CURRENT_SIZE, CURRENT_SIZE])
     return output
+
+def sample(out, exp_sums):
+    out_reshaped = torch.reshape(out, [3, CURRENT_SIZE * CURRENT_SIZE])
+    dir = Dirichlet(out_reshaped)
+    sampled = dir.sample()
+    sampled_reshaped = torch.reshape(out, [3, CURRENT_SIZE, CURRENT_SIZE])
+    return sampled_reshaped
+
 
 
 def dirichlet_kl_divergence(p, q, scalar):

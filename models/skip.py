@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from .common import *
-from .dirichlet import DirichletLayer, ExponentOutputLayer
+from .dirichlet import DirichletLayer, ExponentOutputLayer, SquareOutputLayer
 
 def skip(
         num_input_channels=2, num_output_channels=3, 
@@ -100,5 +100,7 @@ def skip(
     # model.add(nn.ReLU())
 
     # model.add(DirichletLayer())
-    model.add(ExponentOutputLayer())
+    # model.add(ExponentOutputLayer())
+    # model.add(SquareOutputLayer())
+    model.add(nn.Softplus())
     return model
