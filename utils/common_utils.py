@@ -86,6 +86,34 @@ def plot_image_grid(images_np, nrow =8, factor=1, interpolation='lanczos'):
     
     return grid
 
+
+def save_image_grid(images_np, images_name, nrow=8, factor=1, interpolation='lanczos'):
+    """Saves images in a grid
+
+    Args:
+        images_np: list of images, each image is np.array of size 3xHxW of 1xHxW
+        nrow: how many images will be in one row
+        factor: size if the plt.figure
+        interpolation: interpolation used in plt.imshow
+    """
+    n_channels = max(x.shape[0] for x in images_np)
+    assert (n_channels == 3) or (n_channels == 1), "images should have 1 or 3 channels"
+
+    images_np = [x if (x.shape[0] == n_channels) else np.concatenate([x, x, x], axis=0) for x in images_np]
+
+    grid = get_image_grid(images_np, nrow)
+
+    plt.figure(figsize=(len(images_np) + factor, 12 + factor))
+
+    if images_np[0].shape[0] == 1:
+        plt.imsave(images_name, grid[0], cmap='gray')
+    else:
+        plt.imsave(images_name, grid.transpose(1, 2, 0))
+
+    plt.show()
+
+    return grid
+
 def load(path):
     """Load PIL image."""
     img = Image.open(path)
