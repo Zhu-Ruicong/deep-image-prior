@@ -6,7 +6,7 @@ from torch.distributions.kl import kl_divergence
 import numpy as np
 
 CHANNEL_EXP_SUMS = [1,1,1]
-CURRENT_SIZE = 128
+CURRENT_SIZE = 512
 
 
 class ExponentOutputLayer(nn.Module):
@@ -76,7 +76,7 @@ def recover_scale(img_np, sums):
 
 
 def recover_softmax(img_np, exp_sums, scalar):
-    t = img_np.reshape([3, 128 * 128])
+    t = img_np.reshape([3, CURRENT_SIZE * CURRENT_SIZE])
     output = []
     for i in range(3):
         tt = t[i]
