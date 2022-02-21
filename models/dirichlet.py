@@ -6,7 +6,7 @@ from torch.distributions.kl import kl_divergence
 import numpy as np
 
 CHANNEL_EXP_SUMS = [1,1,1]
-CURRENT_SIZE = 512
+CURRENT_SIZE = 128
 
 
 class ExponentOutputLayer(nn.Module):
@@ -53,12 +53,12 @@ def get_softmax_gt(img_torch, img_np):
     return softmax_torch, exp_sums
 
 
-def get_scaled_gt(img_torch):
+def get_scaled_gt(img_torch, sigma):
     t = torch.reshape(img_torch, [3, CURRENT_SIZE * CURRENT_SIZE])
     sums = t.sum(1)
     scaled = torch.matmul(torch.diag(1 / sums), t)
     scaled = torch.reshape(scaled, img_torch.size())
-    return scaled, sums
+    return scaled, sigma / sums, sums
 
 
 def recover_scale(img_np, sums):
@@ -100,3 +100,57 @@ def dirichlet_kl_divergence(p, q, scalar):
     p_reshaped = torch.reshape(p, [3, CURRENT_SIZE * CURRENT_SIZE])
     temp = kl_divergence(Dirichlet(p_reshaped), Dirichlet(q_reshaped)).sum()
     return temp.sum()
+
+def pseudo_inverse_map(img_np, eps):
+    tt = img_np.reshape([3, CURRENT_SIZE * CURRENT_SIZE])
+    K = CURRENT_SIZE * CURRENT_SIZE
+    out = []
+    for i in range(3):
+        cur_layer = tt[i]
+        neg_exp_sum = sum(np.array([math.exp(-xi) for xi in cur_layer]))
+        def transform(x):
+            return (1 / eps) * (1 - 2 / K + math.exp(x) * neg_exp_sum / (K * K))
+        vtransform = np.vectorize(transform)
+        channel = vtransform(cur_layer)
+        out.append(channel)
+    return np.array(out).reshape([3, CURRENT_SIZE, CURRENT_SIZE])
+
+def recover_bridge(img_np):
+    t = img_np.reshape([3, CURRENT_SIZE * CURRENT_SIZE])
+    output = []
+    K = CURRENT_SIZE * CURRENT_SIZE
+    for i in range(3):
+        tt = t[i]
+        log_sum = np.sum(np.array([math.log(xi) for xi in tt]))
+        channel = np.array([math.log(xi) - (log_sum/K) for xi in tt])
+        output.append(channel)
+    output = np.array(output).reshape([3, CURRENT_SIZE, CURRENT_SIZE])
+    return output
+
+# alpha is the current param for dirichlet. Mean is the normal distribution's mean with sum(mean) = 1.
+# def dirichlet_normal_kl_divergence_min_function(alpha, mean, std):
+#     alpha = torch.reshape(alpha, [3, CURRENT_SIZE * CURRENT_SIZE])
+#     mean = torch.reshape(mean, [3, CURRENT_SIZE * CURRENT_SIZE])
+#     a0 = alpha.sum(-1)
+#     k = CURRENT_SIZE * CURRENT_SIZE
+#     entropy = (torch.lgamma(alpha).sum(-1) - torch.lgamma(a0) - (k - a0) * torch.digamma(a0) - ((alpha - 1.0) * torch.digamma(alpha)).sum(-1))
+#     data_part = (0.5/(std*std)) * ((alpha * (alpha+1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0)
+#     return (-entropy + data_part).sum(-1)
+
+
+class DirichletLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(DirichletLoss, self).__init__()
+
+    def forward(self, inputs, targets, smooth=1):
+        alpha = inputs
+        mean, std = targets
+        alpha = torch.reshape(alpha, [3, CURRENT_SIZE * CURRENT_SIZE])
+        mean = torch.reshape(mean, [3, CURRENT_SIZE * CURRENT_SIZE])
+        a0 = alpha.sum(-1)
+        k = CURRENT_SIZE * CURRENT_SIZE
+        entropy = (torch.lgamma(alpha).sum(-1) - torch.lgamma(a0) - (k - a0) * torch.digamma(a0) - (
+                    (alpha - 1.0) * torch.digamma(alpha)).sum(-1))
+        data_part = (0.5 / (std * std)) * (
+                    (alpha * (alpha + 1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0)
+        return (-entropy + data_part).sum(-1)
