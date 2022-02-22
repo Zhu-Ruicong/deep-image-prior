@@ -6,7 +6,7 @@ from torch.distributions.kl import kl_divergence
 import numpy as np
 
 CHANNEL_EXP_SUMS = [1,1,1]
-CURRENT_SIZE = 128
+CURRENT_SIZE = 512
 
 
 class ExponentOutputLayer(nn.Module):
@@ -55,9 +55,12 @@ def get_softmax_gt(img_torch, img_np):
 
 def get_scaled_gt(img_torch, sigma):
     t = torch.reshape(img_torch, [3, CURRENT_SIZE * CURRENT_SIZE])
+    print(t.is_cuda)
     sums = t.sum(1)
+    print(sums.is_cuda)
     scaled = torch.matmul(torch.diag(1 / sums), t)
     scaled = torch.reshape(scaled, img_torch.size())
+    print(scaled.is_cuda)
     return scaled, sigma / sums, sums
 
 
@@ -73,6 +76,12 @@ def recover_scale(img_np, sums):
         output.append(channel)
     output = np.array(output).reshape([3, CURRENT_SIZE, CURRENT_SIZE])
     return output
+
+def recover_scale_torch(img_torch, sums):
+    t = torch.reshape(img_torch, [3, CURRENT_SIZE * CURRENT_SIZE])
+    cur_sums = t.sum(-1).reshape([3,1])
+    out = t / cur_sums * (sums.reshape([3,1]))
+    return torch.reshape(out, img_torch.size())
 
 
 def recover_softmax(img_np, exp_sums, scalar):
