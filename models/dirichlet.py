@@ -53,7 +53,7 @@ def get_softmax_gt(img_torch, img_np):
     return softmax_torch, exp_sums
 
 
-def get_scaled_gt(img_torch, sigma):
+def get_scaled_gt(img_torch):
     t = torch.reshape(img_torch, [3, CURRENT_SIZE * CURRENT_SIZE])
     print(t.is_cuda)
     sums = t.sum(1)
@@ -61,7 +61,7 @@ def get_scaled_gt(img_torch, sigma):
     scaled = torch.matmul(torch.diag(1 / sums), t)
     scaled = torch.reshape(scaled, img_torch.size())
     print(scaled.is_cuda)
-    return scaled, sigma / sums, sums
+    return scaled, sums
 
 
 def recover_scale(img_np, sums):
@@ -152,6 +152,7 @@ class DirichletLoss(nn.Module):
         super(DirichletLoss, self).__init__()
 
     def forward(self, inputs, targets, smooth=1):
+        pi = 3.1415926
         alpha = inputs
         mean, std = targets
         alpha = torch.reshape(alpha, [3, CURRENT_SIZE * CURRENT_SIZE])
@@ -161,5 +162,5 @@ class DirichletLoss(nn.Module):
         entropy = (torch.lgamma(alpha).sum(-1) - torch.lgamma(a0) - (k - a0) * torch.digamma(a0) - (
                     (alpha - 1.0) * torch.digamma(alpha)).sum(-1))
         data_part = (0.5 / (std * std)) * (
-                    (alpha * (alpha + 1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0)
-        return (-entropy + data_part).sum(-1)
+                    (alpha * (alpha + 1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0 + (mean * mean).sum(-1))
+        return (-entropy).sum(-1), data_part.sum(-1)
