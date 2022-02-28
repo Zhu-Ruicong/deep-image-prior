@@ -163,4 +163,6 @@ class DirichletLoss(nn.Module):
                     (alpha - 1.0) * torch.digamma(alpha)).sum(-1))
         data_part = (0.5 / (std * std)) * (
                     (alpha * (alpha + 1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0 + (mean * mean).sum(-1))
-        return (-entropy).sum(-1), data_part.sum(-1)
+        # data_part = (0.5 / (std * std)) * (
+        #             (alpha * (alpha + 1.0)).sum(-1) / (a0 * (a0 + 1.0)) - 2 * (mean * alpha).sum(-1) / a0)
+        return (-entropy + data_part).sum(-1)

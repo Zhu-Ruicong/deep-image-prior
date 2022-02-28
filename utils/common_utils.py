@@ -230,3 +230,37 @@ def optimize(optimizer_type, parameters, closure, LR, num_iter):
             optimizer.step()
     else:
         assert False
+
+def optimize_with_states(optimizer_type, parameters, closure, LR, num_iter):
+    if optimizer_type == 'adam':
+        print('Starting optimization with ADAM')
+        optimizer = torch.optim.Adam(parameters, lr=LR)
+        state1 = None
+        state2 = None
+        state3 = None
+        state4 = None
+        state5 = None
+        printed = False
+        import copy
+        for j in range(num_iter):
+            optimizer.zero_grad()
+            _, valid = closure()
+
+            if valid:
+                state5, state4, state3, state2, state1 = state4, state3, state2, state1, copy.deepcopy(optimizer.state_dict())
+                optimizer.step()
+            else:
+                # if not printed:
+                #     printed = True
+                #     print('------------prev5:-------------')
+                #     print(state5['state'][0])
+                #     print('------------prev:-------------')
+                #     print(state1['state'][0])
+                optimizer = torch.optim.Adam(parameters, lr=LR)
+                optimizer.load_state_dict(state5)
+                for state in optimizer.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.cuda()
+    else:
+        assert False
