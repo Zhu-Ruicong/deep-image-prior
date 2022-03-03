@@ -3,7 +3,7 @@
 # BNN and Dirichlet extensions from Deep Image Prior
 This repository contains the experimental implementations for my Honours Project MA4199 on the topic of Self-supervised Deep Learning Methods in Image Recovery. As the experiments is based on Deep Image Prior, I forked the repo and directly worked on it. 
 
-Specifically, the following is done in the main branch:
+Specifically, the following is done in the master branch:
 1. denoising_bnn.ipynb contains code that runs the BNN version of DIP. See models/bayes.py and models/bayes_skip.py for details of modifications.
 2. denoising_dir.ipynb contains code that runs the dirichlet extension of DIP. See models/dirichlet.py for utility functions involved.
 3. /dir_experiments contains some experimental data of the dirichlet method, comparing the performance using different gamma values.
