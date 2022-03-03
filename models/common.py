@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from .downsampler import Downsampler
+from .bayes import BayesianConv2d
 
 def add_module(self, module):
     self.add_module(str(len(self) + 1), module)
@@ -119,6 +120,33 @@ def conv(in_f, out_f, kernel_size, stride=1, bias=True, pad='zero', downsample_m
   
     convolver = nn.Conv2d(in_f, out_f, kernel_size, stride, padding=to_pad, bias=bias)
 
+
+    layers = filter(lambda x: x is not None, [padder, convolver, downsampler])
+    return nn.Sequential(*layers)
+
+def bayesian_conv(in_f, out_f, kernel_size, stride=1, bias=True, pad='zero', downsample_mode='stride', lambda_1 = 0.1, lambda_2 = 0.1):
+    downsampler = None
+    if stride != 1 and downsample_mode != 'stride':
+
+        if downsample_mode == 'avg':
+            downsampler = nn.AvgPool2d(stride, stride)
+        elif downsample_mode == 'max':
+            downsampler = nn.MaxPool2d(stride, stride)
+        elif downsample_mode in ['lanczos2', 'lanczos3']:
+            downsampler = Downsampler(n_planes=out_f, factor=stride, kernel_type=downsample_mode, phase=0.5,
+                                      preserve_size=True)
+        else:
+            assert False
+
+        stride = 1
+
+    padder = None
+    to_pad = int((kernel_size - 1) / 2)
+    if pad == 'reflection':
+        padder = nn.ReflectionPad2d(to_pad)
+        to_pad = 0
+
+    convolver = BayesianConv2d(in_f, out_f, (kernel_size, kernel_size), stride=stride, padding=to_pad, bias=bias)
 
     layers = filter(lambda x: x is not None, [padder, convolver, downsampler])
     return nn.Sequential(*layers)

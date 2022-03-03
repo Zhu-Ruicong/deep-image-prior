@@ -2,8 +2,6 @@ import torch.nn
 from torch import nn
 from torch.distributions.dirichlet import *
 
-CURRENT_SIZE = 512
-
 def get_scaled_gt(img_torch, M, N):
     t = torch.reshape(img_torch, [3, M * N])
     print(t.is_cuda)
