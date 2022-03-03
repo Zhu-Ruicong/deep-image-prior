@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
+from blitz.modules import BayesianConv2d
 from .downsampler import Downsampler
 from .bayes import BayesianConv2d
 
@@ -118,7 +119,8 @@ def conv(in_f, out_f, kernel_size, stride=1, bias=True, pad='zero', downsample_m
         padder = nn.ReflectionPad2d(to_pad)
         to_pad = 0
   
-    convolver = nn.Conv2d(in_f, out_f, kernel_size, stride, padding=to_pad, bias=bias)
+    # convolver = nn.Conv2d(in_f, out_f, kernel_size, stride, padding=to_pad, bias=bias)
+    convolver = BayesianConv2d(in_f, out_f, (kernel_size, kernel_size), stride=stride, padding=to_pad, bias=bias)
 
 
     layers = filter(lambda x: x is not None, [padder, convolver, downsampler])
