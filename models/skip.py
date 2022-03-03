@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from .common import *
-from .dirichlet import DirichletLayer, ExponentOutputLayer, SquareOutputLayer
 
 def skip(
         num_input_channels=2, num_output_channels=3, 
@@ -9,7 +8,7 @@ def skip(
         filter_size_down=3, filter_size_up=3, filter_skip_size=1,
         need_sigmoid=True, need_bias=True, 
         pad='zero', upsample_mode='nearest', downsample_mode='stride', act_fun='LeakyReLU', 
-        need1x1_up=True):
+        need1x1_up=True, need_softmax=False):
     """Assembles encoder-decoder with skip connections.
 
     Arguments:
@@ -95,12 +94,11 @@ def skip(
         model_tmp = deeper_main
 
     model.add(conv(num_channels_up[0], num_output_channels, 1, bias=need_bias, pad=pad))
-    # if need_sigmoid:
-    #     model.add(nn.Sigmoid())
-    # model.add(nn.ReLU())
+    if need_sigmoid:
+        model.add(nn.Sigmoid())
 
-    # model.add(DirichletLayer())
-    # model.add(ExponentOutputLayer())
-    # model.add(SquareOutputLayer())
-    model.add(nn.Softplus())
+    if need_softmax:
+        model.add(nn.Softplus())
+    else:
+        model.add(nn.ReLU())
     return model
