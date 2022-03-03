@@ -1,5 +1,16 @@
 **Warning!** The optimization may not converge on some GPUs. We've personally experienced issues on Tesla V100 and P40 GPUs. When running the code, make sure you get similar results to the paper first. Easiest to check using text inpainting notebook.  Try to set double precision mode or turn off cudnn. 
 
+# BNN and Dirichlet extensions from Deep Image Prior
+This repository contains the experimental implementations for my Honours Project MA4199 on the topic of Self-supervised Deep Learning Methods in Image Recovery. As the experiments is based on Deep Image Prior, I forked the repo and directly worked on it. 
+
+Specifically, the following is done in the main branch:
+1. denoising_bnn.ipynb contains code that runs the BNN version of DIP. See models/bayes.py and models/bayes_skip.py for details of modifications.
+2. denoising_dir.ipynb contains code that runs the dirichlet extension of DIP. See models/dirichlet.py for utility functions involved.
+3. /dir_experiments contains some experimental data of the dirichlet method, comparing the performance using different gamma values.
+
+
+### The following is the original README.md from Deep Image Prior
+
 # Deep image prior
 
 In this repository we provide *Jupyter Notebooks* to reproduce each figure from the paper:
