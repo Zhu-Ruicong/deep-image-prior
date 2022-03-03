@@ -11,7 +11,7 @@ dependencies:
 - setuptools
 - cmake
 - cffi
-- pytorch
+- pytorch=0.4
 - matplotlib
 - scikit-image
 - torchvision
